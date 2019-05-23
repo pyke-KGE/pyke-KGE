@@ -531,7 +531,7 @@ class DataAnalyser(object):
         df_most_similars.drop(columns=[0], inplace=True)
 
 
-        # If kNN operProbabily no need to mapping as we calculated for all
+        # Map back to the original indexes. KNN does not consider the index of Dataframe.
         mapper = dict(zip(list(range(len(e_w_types))), e_w_types.index.values))
         # The values of most similars are mapped to original vocabulary positions
         df_most_similars = df_most_similars.applymap(lambda x: mapper[x])
