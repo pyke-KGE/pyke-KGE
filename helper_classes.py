@@ -348,6 +348,7 @@ class PYKE(object):
             e[target_index] = e[target_index] + total_effect
 
 
+
         return e
 
     @performance_debugger('Generating Embeddings:')
@@ -365,7 +366,6 @@ class PYKE(object):
 
 
             e = np.nan_to_num(e)
-
             with warnings.catch_warnings():
                 try:
                     e = (e - e.min(axis=0)) / (e.max(axis=0) - e.min(axis=0))
@@ -377,11 +377,10 @@ class PYKE(object):
                     exit(1)
 
 
-
-
             new_f_norm = LA.norm(e, 'fro')
 
-            if self.equilibrium(epoch, previous_f_norm, new_f_norm, ):
+            if self.equilibrium(epoch, previous_f_norm, new_f_norm):
+                e = np.nan_to_num(e)
                 break
 
         return pd.DataFrame(e)
