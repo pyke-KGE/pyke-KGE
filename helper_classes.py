@@ -298,14 +298,14 @@ class PYKE(object):
         """
 
         dist = embedding_space[context_indexes] - embedding_space[target_index]
-        # replace all zeros to 1
-        dist[dist == 0] = 1
+        # replace all zeros to 1 as a normalizer.
+        dist[dist == 0] = 0.1
         # replace all
         pull = dist * PMS
         total_pull = np.sum(pull, axis=0)
 
 
-        return np.nan_to_num(total_pull)
+        return total_pull
 
     @staticmethod
     def apply_inverse_hooke_s_law(embedding_space, target_index, repulsive_indexes, omega):
@@ -321,17 +321,23 @@ class PYKE(object):
         # calculate distance from target to repulsive entities
         dist = embedding_space[repulsive_indexes] - embedding_space[target_index]
 
+        # replace all zeros to 1
+        dist[dist == 0] = 0.1
+
         with warnings.catch_warnings():
             try:
 
                 total_push = -omega * np.reciprocal(dist).sum(axis=0)
+
+                # replace all zeros to 1
+                total_push[total_push == 0] = 0.1
 
             except RuntimeWarning as r:
                 print(r)
                 print("Unexpected error:", sys.exc_info()[0])
                 exit(1)
 
-        return np.nan_to_num(total_push)
+        return total_push
 
     def go_through_entities(self, e, holder, omega):
 
@@ -468,10 +474,9 @@ class DataAnalyser(object):
         sum_purity = 0
         for c in clusters:
 
-            indexes_in_c = df_only_subjects[df_only_subjects.labels == c].index.values
+            valid_indexes_in_c = df_only_subjects[df_only_subjects.labels == c].index.values
 
             sum_of_cosines = 0
-            valid_indexes_in_c = indexes_in_c
 
             print('##### CLUSTER', c, ' #####')
 
@@ -526,6 +531,9 @@ class DataAnalyser(object):
         # Get similarity results for selected entities
         df_most_similars = pd.DataFrame(neigh.kneighbors(e_w_types, return_distance=False))
 
+        # Reindex the target
+        df_most_similars.index = e_w_types.index.values
+
         # As sklearn implementation of kneighbors returns the point itself as most similar point
         df_most_similars.drop(columns=[0], inplace=True)
 
@@ -543,8 +551,8 @@ class DataAnalyser(object):
             print('#####', k, '####')
             similarities = list()
             for _, S in df_most_similars.iterrows():
-                true_types = type_info[S.values[0]]
-                type_predictions = [type_info[_] for _ in S.values[1:k + 1]]
+                true_types = type_info[_]
+                type_predictions = [type_info[_] for _ in S.values[:k]]
 
                 vector_true = create_binary_type_vector(true_types, all_types)
                 vector_prediction = create_binary_type_prediction_vector(type_predictions, all_types)

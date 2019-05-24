@@ -12,11 +12,11 @@ np.random.seed(random_state)
 random.seed(random_state)
 
 # DEFINE MODEL PARAMS
-K = 2
-num_of_dims = 2
+K = 45
+num_of_dims = 50
 bound_on_iter = 30
-omega = -10  # .45557
-e_release = 0.5  # 0.0414
+omega = 0.45557
+e_release = 0.0414
 
 kg_root = 'KGs/DBpedia'
 kg_path = kg_root + '/'
